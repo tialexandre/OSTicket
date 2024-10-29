@@ -53,7 +53,7 @@ systemctl enable httpd
 #Intalação do PHP5e alguns Módulos necessários.
 sudo dnf install -y https://rpms.remirepo.net/enterprise/remi-release-9.rpm
 sudo dnf module enable php:remi-8.4  # ou a versão desejada
-sudo dnf install -y php php-mysqlnd php-intl php-imap php-gd php-mbstring php-xml php-curl php-cli php-pear php-devel
+sudo dnf install -y php php-mysqlnd php-zip php-intl php-imap php-gd php-mbstring php-xml php-curl php-cli php-pear php-devel
 sudo pecl install apcu
 echo "extension=apcu.so" | sudo tee /etc/php.d/40-apcu.ini
 
