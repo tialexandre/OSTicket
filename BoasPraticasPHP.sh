@@ -21,6 +21,8 @@ OPCACHE_MEMORY="128"
 OPCACHE_MAX_FILES="4000"
 OPCACHE_VALIDATE_TIMESTAMPS="1"
 OPCACHE_REVALIDATE_FREQ="60"
+SHORT_OPEN_TAG="Off"
+
 
 # Encontra todos os arquivos php.ini no sistema
 find / -type f -name "php.ini" 2>/dev/null | while read -r php_ini; do
@@ -42,13 +44,14 @@ find / -type f -name "php.ini" 2>/dev/null | while read -r php_ini; do
     sed -i "s|^expose_php.*|expose_php = $EXPOSE_PHP|" "$php_ini"
     sed -i "s|^max_input_vars.*|max_input_vars = $MAX_INPUT_VARS|" "$php_ini"
     sed -i "s|^max_input_time.*|max_input_time = $MAX_INPUT_TIME|" "$php_ini"
+    sed -i "s|^max_input_time.*|max_input_time = $MAX_INPUT_TIME|" "$php_ini"
 
     # Configurações de OpCache
     sed -i "s|^opcache.enable.*|opcache.enable = $OPCACHE_ENABLE|" "$php_ini"
     sed -i "s|^opcache.memory_consumption.*|opcache.memory_consumption = $OPCACHE_MEMORY|" "$php_ini"
     sed -i "s|^opcache.max_accelerated_files.*|opcache.max_accelerated_files = $OPCACHE_MAX_FILES|" "$php_ini"
     sed -i "s|^opcache.validate_timestamps.*|opcache.validate_timestamps = $OPCACHE_VALIDATE_TIMESTAMPS|" "$php_ini"
-    sed -i "s|^opcache.revalidate_freq.*|opcache.revalidate_freq = $OPCACHE_REVALIDATE_FREQ|" "$php_ini"
+    sed -i "s|^short_open_tag.*|short_open_tag = $SHORT_OPEN_TAG|" "$php_ini"
 
     # Se o timezone não existir, adiciona a configuração ao final do arquivo
     if ! grep -q "^date.timezone" "$php_ini"; then
