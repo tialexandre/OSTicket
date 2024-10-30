@@ -44,6 +44,7 @@ sudo systemctl enable --now php83-php-fpm
 
 echo 'LANG="pt_BR.utf8"' > /etc/locale.conf 
 
+
 #desativa SELINUX
 sed -i 's/enforcing/disabled/g' /etc/selinux/config
 
@@ -91,6 +92,8 @@ php manage.php deploy -v /var/www/html/osticket/
 
 chown ostickett:apache -R /var/www/html/osticket
 sudo chmod -R 755 /var/www/html/osticket
+mv pt_BR.phar  /www/html/osticket/include/i18n/
+
 
 #Renomeie o arquivo de configuração do osTicket:
 cd /var/www/html/osticket/include
