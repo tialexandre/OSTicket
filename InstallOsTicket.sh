@@ -98,6 +98,48 @@ sudo cp ost-sampleconfig.php ost-config.php
 sudo chmod 0666 ost-config.php
 
 
+#Monta Sock no PHPfPM
+cat > /etc/opt/remi/php83/php-fpm.d/osticket.conf <<'EOF'
+[osticket]
+;cpu_affinity = 0 1 3
+prefix = /var/www/system/php
+user = root
+group = apache
+
+listen = \$pool.sock
+listen.owner = root
+listen.group = apache
+listen.mode = 0660
+
+chdir = /
+
+catch_workers_output = yes
+
+php_value[memory_limit] = 2048M
+php_value[disable_functions] = "opcache_get_status"
+php_value[error_reporting] = 22519
+php_value[max_execution_time] = 90
+php_value[max_input_time] = 300
+php_value[max_execution_time] = 300
+php_value[open_basedir] = "/var/www/vhosts/\$pool/:/tmp/"
+php_value[post_max_size] = 70M
+php_value[upload_max_filesize] = 70M
+php_value[opcache.enable] = 1
+php_value[opcache.enable_cli] = 1
+php_value[opcache.revalidate_freq] = 60
+php_value[opcache.fast_shutdown] = 1
+php_value[opcache.enable_file_override] = 1
+
+pm = dynamic
+pm.max_requests = 500
+pm.max_children = 250
+pm.max_spare_servers = 30
+pm.min_spare_servers = 15
+pm.process_idle_timeout = 15s
+pm.start_servers = 15
+EOF
+
+
 cat >  /etc/nginx/conf.d/osticket.conf <<EOF
 server {
     listen 80;
