@@ -98,25 +98,58 @@ sudo cp ost-sampleconfig.php ost-config.php
 sudo chmod 0666 ost-config.php
 
 
-cat > /etc/httpd/conf.d/osticket.conf <<EOF
-<VirtualHost *:80>
-    ServerAdmin admin@seusite.com
-    DocumentRoot /var/www/html/osticket
-    ServerName seusite.com
+cat >  /etc/nginx/conf.d/osticket.conf <<EOF
+server {
+    listen 80;
+    server_name manutencao.ccv.com.br;
 
-    <Directory /var/www/html/osticket>
-        Options Indexes FollowSymLinks
-        AllowOverride All
-        Require all granted
-    </Directory>
+    root /var/www/html/osticket;  # Diretório raiz do osTicket
+    index index.php index.html index.htm;
 
-    ErrorLog /var/log/httpd/osticket_error.log
-    CustomLog /var/log/httpd/osticket_access.log combined
-</VirtualHost>
+    # Configuração de logs
+    access_log /var/log/nginx/osticket_access.log;
+    error_log /var/log/nginx/osticket_error.log;
+
+    # Configurações de segurança e permissões
+    location / {
+        try_files $uri $uri/ /index.php;
+    }
+
+    # Configuração para arquivos PHP
+    location ~ \.php$ {
+        try_files $uri =404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        fastcgi_pass unix:/run/php-fpm/www.sock;  # Verifique o caminho do socket PHP-FPM
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
+
+    # Diretório de upload
+    location ~* \.(?:ico|css|js|gif|jpe?g|png)$ {
+        expires 30d;
+        access_log off;
+        add_header Cache-Control "public";
+    }
+
+    # Segurança para bloquear acesso direto a arquivos sensíveis
+    location ~ ^/ost-config\.php$ {
+        deny all;
+        access_log off;
+        log_not_found off;
+    }
+
+    # Configurações de gzip para melhorar a performance
+    gzip on;
+    gzip_vary on;
+    gzip_min_length 10240;
+    gzip_proxied any;
+    gzip_types text/plain text/css text/xml application/json application/javascript application/xml+rss application/atom+xml;
+}
 EOF
 
 sudo chmod 0666 /var/www/html/osticket/include/ost-config.php
-sudo systemctl restart httpd
+sudo systemctl restart nginx
 
 
 #http://seusite.com/osticket/scp
