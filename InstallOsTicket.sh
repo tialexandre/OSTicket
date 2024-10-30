@@ -99,6 +99,7 @@ sudo chmod 0666 ost-config.php
 
 
 #Monta Sock no PHPfPM
+sudo mkdir -p /var/www/system/php
 cat > /etc/opt/remi/php83/php-fpm.d/osticket.conf <<'EOF'
 [osticket]
 ;cpu_affinity = 0 1 3
