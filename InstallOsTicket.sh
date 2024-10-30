@@ -140,6 +140,10 @@ pm.start_servers = 15
 EOF
 
 
+#Cria certificado
+openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout /etc/pki/tls/osticket.key -out /etc/pki/tls/osticket.crt -subj "/C=SE/ST=Some-State/O=Internet Widgits Pty Ltd/CN=osticket"
+sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/pki/tls/localhost.key -out /etc/pki/tls/localhost.pem
+
 cat >  /etc/nginx/conf.d/osticket.conf <<EOF
 server {
     listen 80;
