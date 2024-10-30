@@ -146,79 +146,51 @@ sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/pki/tls/lo
 
 cat  > /etc/nginx/vhost.d/001-osticket.conf << 'EOF'
 server {
-	listen *:80;
-	server_name manutencao.ccv.com.br;
+    listen 80;
+    server_name manutencao.ccv.com.br;
 
-	root /var/www/html/osticket;
+    root /var/www/html/osticket;  # Diretório raiz do osTicket
+    index index.php index.html index.htm;
 
-	return 301 https://osticket$request_uri;
-	location ~* ^.+\.(css|js|jpg|jpeg|gif|png|ico|gz|svg|svgz|ttf|otf|woff|woff2|eot|mp4|ogg|ogv|webm|webp|zip|swf|map)$ {
-		aio threads;
-		# Tenta servir arquivos estáticos e retorna 404 se não encontrado
-		try_files $uri $uri/ /index.php?$args;
-	}
+    # Configuração de logs
+    access_log /var/log/nginx/osticket_access.log;
+    error_log /var/log/nginx/osticket_error.log;
 
+    # Configurações de segurança e permissões
+    location / {
+        try_files $uri $uri/ /index.php;
+    }
 
-	etag off;
+    # Configuração para arquivos PHP
+    location ~ \.php$ {
+        try_files $uri =404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        fastcgi_pass unix:/run/php-fpm/www.sock;  # Verifique o caminho do socket PHP-FPM
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
 
-	location / {
-	        index  index.html index.htm index.php;
-	        try_files $uri $uri/ /index.php?$args;
-	}
-	location ~ \.php$ {
-	        expires        -1d;
-	        fastcgi_pass   osticket;
-	        fastcgi_index  index.php;
-	        fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
-	        include        fastcgi_params;
-	        fastcgi_param  PHP_VALUE "default_charset=utf-8";
-	}
+    # Diretório de upload e cache para arquivos estáticos
+    location ~* \.(?:ico|css|js|gif|jpe?g|png)$ {
+        expires 30d;
+        access_log off;
+        add_header Cache-Control "public";
+    }
 
-	access_log /var/log/nginx/osticket-access.log;
-	error_log /var/log/nginx/osticket-error.log;
-}
+    # Segurança para bloquear acesso direto a arquivos sensíveis
+    location ~ ^/ost-config\.php$ {
+        deny all;
+        access_log off;
+        log_not_found off;
+    }
 
-server {
-	listen *:443 ssl;
-	server_name osticket www.osticket;
-
-	ssl_certificate      /etc/pki/tls/osticket.crt;
-	ssl_certificate_key  /etc/pki/tls/osticket.key;
-
-	keepalive_timeout  65;
-	root /var/www/html/osticket;
-	etag off;
-
-	# Custom 
-	sendfile       on;
-	tcp_nopush     on;
-	tcp_nodelay    on;
-	proxy_ignore_client_abort on;
-	client_max_body_size 100m;
-	include wordpress.d/*.conf;
-	location ~* ^.+\.(css|js|jpg|jpeg|gif|png|ico|gz|svg|svgz|ttf|otf|woff|woff2|eot|mp4|ogg|ogv|webm|webp|zip|swf|map)$ {
-		aio threads;
-		# Tenta servir arquivos estáticos e retorna 404 se não encontrado
-		try_files $uri $uri/ =404;
-	}
-
-
-	location / {
-	        index  index.html index.htm index.php;
-	        try_files $uri $uri/ /index.php?$args;
-	}
-
-	location ~ \.php$ {
-	        expires        -1d;
-	        fastcgi_pass   osticket;
-	        fastcgi_index  index.php;
-	        fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
-	        include        fastcgi_params;
-	        fastcgi_param  PHP_VALUE "default_charset=utf-8";
-	}
-
-	access_log /var/log/nginx/osticket-access.log;
-	error_log /var/log/nginx/osticket-error.log;
+    # Configurações de gzip para melhorar a performance
+    gzip on;
+    gzip_vary on;
+    gzip_min_length 10240;
+    gzip_proxied any;
+    gzip_types text/plain text/css text/xml application/json application/javascript application/xml+rss application/atom+xml;
 }
 EOF
 
