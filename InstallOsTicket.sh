@@ -4,29 +4,45 @@ sudo yum upgrade -y
 sudo dnf -y install epel-release
 
 sudo yum update -y 
-sudo yum install  -y  install expect 
-sudo yum install  -y  glibc-langpack-en 
-sudo yum install  -y  glibc-langpack-pt
-sudo yum install  -y  git
-sudo yum install  -y  vim
-sudo yum install  -y  wget
-sudo yum install  -y  net-tools
-sudo yum install  -y  htop
-sudo yum install  -y  iftop
-sudo yum install  -y  iotop
-sudo yum install  -y  nload
-sudo yum install  -y  nmon
-sudo yum install  -y  nethogs
-sudo yum install  -y  ntfs-3g
-sudo yum install  -y  sshfs
-sudo yum install  -y  parted
-sudo yum install  -y  net-tools
-sudo yum install  -y  ethtool 
-sudo yum install  -y  unzip 
+#Instalar PHP83
+Versao=83
+VRemi="8.3"
+sudo dnf install -y https://rpms.remirepo.net/enterprise/remi-release-9.rpm
+sudo dnf module reset php -y
+sudo dnf module enable php:remi-${VRemi} -y
+
+# Instalar o PHP 8.3 e os módulos especificados
+sudo dnf install -y php${VRemi} 
+sudo dnf install -y php${Versao}-php-json
+sudo dnf install -y php${Versao}-php-pdo
+sudo dnf install -y php${Versao}-php-mysqlnd
+sudo dnf install -y php${Versao}-php-cli
+sudo dnf install -y php${Versao}-php-fpm
+sudo dnf install -y php${Versao}-php-opcache
+sudo dnf install -y php${Versao}-php-pecl-igbinary
+sudo dnf install -y php${Versao}-php-pecl-msgpack
+sudo dnf install -y php${Versao}-php-xml
+sudo dnf install -y php${Versao}-php-mbstring
+sudo dnf install -y php${Versao}-php-sodium
+sudo dnf install -y php${Versao}-php-gd
+sudo dnf install -y php${Versao}-php-pecl-redis6
+sudo dnf install -y php${Versao}-php-pecl-mcrypt
+sudo dnf install -y php${Versao}-php-intl
+sudo dnf install -y php${Versao}-php-pecl-zip
+sudo dnf install -y php${Versao}-php-pecl-mysql 
+sudo dnf install -y php${Versao}*-imap*
+sudo dnf install -y php${Versao}-php-gd 
+sudo dnf install -y php${Versao}-php-zip 
+sudo dnf install -y php${Versao}-php*imagick-im7*
+sudo dnf install -y php${Versao}-php-gd 
+sudo dnf install -y php${Versao}-php-zip  
+sudo dnf install -y php${Versao}*-*xmlrpc*
+sudo dnf install -y php${Versao}-php-pecl-apcu
+sudo dnf install -y php${Versao}-php-pecl-simdjson
+sudo systemctl enable --now php83-php-fpm
+
 
 echo 'LANG="pt_BR.utf8"' > /etc/locale.conf 
-
-
 
 #desativa SELINUX
 sed -i 's/enforcing/disabled/g' /etc/selinux/config
@@ -40,27 +56,30 @@ systemctl stop firewalld ; systemctl disable firewalld
 systemctl stop firewalld
 systemctl disable firewalld
 
+#Agent Proxmox
+dnf install qemu-guest-agent -y
+systemctl enable --now  qemu-guest-agent 
+
+#Instala Nginx 
+sudo dnf -y install nginx
+sudo systemctl enable --now nginx
+
+
 #instala pacotes
 sudo yum -y install mariadb mariadb-server
 systemctl enable mariadb
 systemctl start mariadb
 
-#Instalação do Apache
-sudo yum -y  install httpd
-systemctl start httpd
-systemctl enable httpd
-
-#Intalação do PHP5e alguns Módulos necessários.
-sudo dnf install -y https://rpms.remirepo.net/enterprise/remi-release-9.rpm
-sudo dnf module enable php:remi-8.4  # ou a versão desejada
-sudo dnf install -y php php-mysqlnd php-zip php-intl php-imap php-gd php-mbstring php-xml php-curl php-cli php-pear php-devel
-sudo pecl install apcu
-echo "extension=apcu.so" | sudo tee /etc/php.d/40-apcu.ini
-
 #Configura MariaDB
 chmod +x *.sh
 ./secure_mysql_auto.sh
 ./CreateDB_OsTicket.sh
+
+
+
+#Ajuste users
+sudo useradd -m -d /var/www/html/osticket -g apache osticket
+usermod -a -G apache nginx
 
 #Baixar osTicket
 cd /tmp
@@ -70,8 +89,7 @@ php manage.php deploy --setup /var/www/html/osticket/
 git pull
 php manage.php deploy -v /var/www/html/osticket/
 
-#configura apache
-sudo chown -R apache:apache /var/www/html/osticket
+chown ostickett:apache -R /var/www/html/osticket
 sudo chmod -R 755 /var/www/html/osticket
 
 #Renomeie o arquivo de configuração do osTicket:
