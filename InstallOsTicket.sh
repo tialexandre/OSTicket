@@ -36,6 +36,7 @@ sudo dnf install -y php${Versao}-php-zip
 sudo dnf install -y php${Versao}-php*imagick-im7*
 sudo dnf install -y php${Versao}-php-gd 
 sudo dnf install -y php${Versao}-php-zip  
+sudo dnf install -y php${Versao}-php-ldap   
 sudo dnf install -y php${Versao}*-*xmlrpc*
 sudo dnf install -y php${Versao}-php-pecl-apcu
 sudo dnf install -y php${Versao}-php-pecl-simdjson
